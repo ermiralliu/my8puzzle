@@ -1,0 +1,18 @@
+#!/bin/bash
+
+
+# Old and new extensions
+old_extension=".cs"
+new_extension=".cpp"
+
+# Find and loop through files with the old extension
+find -type f -name "*$old_extension" | while read file; do
+    # Get the base name of the file (without extension)
+    base_name=$(basename "$file" "$old_extension")
+    # Get the directory of the file
+    dir_name=$(dirname "$file")
+    # Rename the file with the new extension
+    mv "$file" "$dir_name/$base_name$new_extension"
+done
+
+echo "File extensions changed successfully."
