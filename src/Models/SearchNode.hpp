@@ -13,11 +13,10 @@ struct SearchNode{
 
     SearchNode() = default;
 
-    SearchNode(int previous, int id, Board current, int moves) : 
+    SearchNode(int previous, int id, Board current) : 
       previous_board_id{previous},
       id{id},
-      board{current},
-      moves{moves}
+      board{current}
     {}
       
     static int Compare(SearchNode a, SearchNode b) {  // this will just be declared as a lambda in SolverService

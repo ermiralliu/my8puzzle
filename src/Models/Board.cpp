@@ -6,6 +6,8 @@
 #include "Board.hpp"
 #include <algorithm>
 
+// actually managed to compile this successfully using -Wall
+
 namespace Models{
 
 template <uint N>  bool Board<N>::isGoal() const {
@@ -13,10 +15,11 @@ template <uint N>  bool Board<N>::isGoal() const {
 };
 
 template <uint N>  
-structures::neighbors<N> Board<N>::neighbors(){
+Neighbors<N> Board<N>::neighbors(){
+
   structures::empty_indexes sides {};
-  int empty_row = emptyIndex / N;
-  int empty_column = emptyIndex % N;
+  uint empty_row = emptyIndex / N;
+  uint empty_column = emptyIndex % N;
   if (empty_column > 0)  // left
     sides.push(emptyIndex - 1);
   if (empty_column < N - 1) // right
@@ -26,14 +29,12 @@ structures::neighbors<N> Board<N>::neighbors(){
   if (empty_row < N - 1) // down
     sides.push(emptyIndex + N);
   // loop
-  structures::neighbors<N> neighbors {};
+  Neighbors<N> neighbors {};
   for(const auto& newEmpty : sides) {
     neighbors.push(makeNeighbor(newEmpty));
   }
   return neighbors;
 };
-
-
 
 template <uint N>
 bool Board<N>::isSolvable() const{
@@ -61,45 +62,32 @@ std::string Board<N>::toString(std::array<byte, SIZE > tiles){
 }
 
 template <uint N>
-Board<N> Board<N>::makeNeighbor(int newEmpty) const { //returns a new board after the swap
+BoardDtos<N> Board<N>::makeNeighbor(uint newEmpty) const { //returns a new board + a bool which is true if it needs
+// to go to the next box
   std::array<byte,SIZE> next_tiles = tiles;
   
   int manhattan_first = oneManhattan(next_tiles, newEmpty);
   next_tiles[emptyIndex] = next_tiles[newEmpty];  // futim nr e ri ne pozicionin bosh
   next_tiles[newEmpty] = 0; // levizim pozicionin bosh
   int manhattan_second = oneManhattan(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
-  int manhattan_difference = manhattan_second - manhattan_first;  // O(1) per manhattan_difference
+  bool next_box = manhattan_second - manhattan_first > 0;
 
-  return Board{
-    next_tiles, // O(n) per shallow copy
-    manhattanDistance + manhattan_difference,
-    newEmpty
+  return { 
+    Board {
+      next_tiles, // O(n) per shallow copy
+      newEmpty
+    }, 
+    next_box
   };
 }
 
 template <uint N>
 Board<N> Board<N>::make_init_board(std::array<byte, Board<N>::SIZE> tiles){ // O(n^2)
-  uint size = SIZE;
-  int manhattan_sum = 0;
-  // int hamming_sum = 0;
-  int row = -1;
-  int column = -1;
-  for (uint i = 0; i < size; i++){
-    for (uint j = 0; j < size; j++){
-      int current = static_cast<int>(tiles[ind++]);
-      if (current == 0){
-        row = i;
-        column = j;
-        continue;
-      }
-      int index = current - 1;
-      int needed_row = index / size;
-      int needed_column = index % size;
-      int current_sum = std::abs(needed_row - i) + std::abs(needed_column - j);
-      manhattan_sum += current_sum;
-    }
-  }
-  return Board{tiles, manhattan_sum, static_cast<int>(row * N + column)};
+  uint emptyIndex;
+  for(uint i=0; i< Board<N>::SIZE; ++i)
+    if(tiles[i] == 0)
+      emptyIndex = i;
+  return Board{tiles, emptyIndex};
 };
 
 template <uint N>

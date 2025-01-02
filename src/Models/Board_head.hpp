@@ -4,4 +4,5 @@
 
 namespace Models{
   template <uint N> class Board;
+  template <uint N> struct BoardDtos;
 }

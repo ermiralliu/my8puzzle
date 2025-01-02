@@ -11,6 +11,11 @@ struct BoardSave {
 
   public:
     BoardSave() = default;
+    
+    BoardSave(std::array<byte,N*N> tiles, size_t hash) :
+      tiles{tiles},
+      hash{hash}
+    { }
 
     inline size_t getHash() const {
       return hash;

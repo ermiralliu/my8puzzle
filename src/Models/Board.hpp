@@ -1,6 +1,7 @@
 #include <functional> // For hash
 #include <string> // std::string
 #include <array>
+#include "Board_head.hpp"
 
 #include "../structures/PreAllocatedStack.hpp"
 
@@ -10,10 +11,14 @@
 namespace Models{
   using byte = unsigned char;
   using std::size_t;
-// enum class Box{
-//   CURRENT_BOX,
-//   NEXT_BOX
-// };
+
+template <uint N>
+using Neighbors = structures::prealloc_stack<4, BoardDtos<N>>;
+
+template <uint N> struct BoardDtos{
+  Board<N> board;
+  bool nextBox;
+};
 
 template <size_t SIZE> constexpr
 std::array<byte, SIZE> generate_final_array(){
@@ -35,27 +40,25 @@ template <uint N> class Board{
   
   private:  
     std::array<byte, SIZE> tiles;
-    uint manhattanDistance;
     uint emptyIndex;
     size_t hash;	//caching the hashCode, so we don't recompute the string each time
 
   public:
-    inline int getManhattanDistance() const{
-      return manhattanDistance;
-    }
     inline int getEmptyIndex() const{
       return emptyIndex;
     }
     inline size_t getHash() const{
       return hash;
     }
+    inline std::array<byte, SIZE> getTiles() const{
+      return tiles;
+    }
   
   Board() = default;  // this should never be actually used by anyone, but i need it for copy and move semantics
   // just to be able to allocate space without playing games and whatnot
 
-  Board(std::array<byte, SIZE> tiles, uint manhattanDistance, uint emptyIndex) :
+  Board(std::array<byte, SIZE> tiles, uint emptyIndex) :
     tiles{ tiles },
-    manhattanDistance{ manhattanDistance }, 
     emptyIndex{ emptyIndex },
     hash{ hasher(std::string(tiles.begin(), tiles.end())) }
   { }
@@ -70,9 +73,9 @@ template <uint N> class Board{
 
   static std::string toString(std::array<byte, SIZE> tiles);
 
-  structures::neighbors<N> neighbors();
+  Neighbors<N> neighbors();
   
-  Board makeNeighbor(int newEmpty) const;
+  BoardDtos<N> makeNeighbor(uint newEmpty) const;
   
   static int oneManhattan(std::array<byte, SIZE> tiles, uint newIndex);
 

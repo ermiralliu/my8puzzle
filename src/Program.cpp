@@ -1,2 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
-// Console.WriteLine("Hello, World!");
+﻿#include <iostream>
+// #include "Services/SolverService.hpp"
+
+int main(){
+
+  return 0;
+}
