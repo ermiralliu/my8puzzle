@@ -16,7 +16,6 @@ template <uint N>  bool Board<N>::isGoal() const {
 
 template <uint N>  
 Neighbors<N> Board<N>::neighbors(){
-
   structures::empty_indexes sides {};
   uint empty_row = emptyIndex / N;
   uint empty_column = emptyIndex % N;
@@ -46,7 +45,7 @@ bool Board<N>::isSolvable() const{
 }
 
 template <uint N>
-std::string Board<N>::toString(std::array<byte, SIZE > tiles){
+std::string Board<N>::toString(Tiles<N> tiles){
   std::string str; //preallocating all the space needed;
   str.reserve(N + SIZE + 4);
   str.append(std::to_string(N) + "\n");
@@ -64,7 +63,7 @@ std::string Board<N>::toString(std::array<byte, SIZE > tiles){
 template <uint N>
 BoardDtos<N> Board<N>::makeNeighbor(uint newEmpty) const { //returns a new board + a bool which is true if it needs
 // to go to the next box
-  std::array<byte,SIZE> next_tiles = tiles;
+  Tiles<N> next_tiles = tiles;
   
   int manhattan_first = oneManhattan(next_tiles, newEmpty);
   next_tiles[emptyIndex] = next_tiles[newEmpty];  // futim nr e ri ne pozicionin bosh
@@ -82,7 +81,7 @@ BoardDtos<N> Board<N>::makeNeighbor(uint newEmpty) const { //returns a new board
 }
 
 template <uint N>
-Board<N> Board<N>::make_init_board(std::array<byte, Board<N>::SIZE> tiles){ // O(n^2)
+Board<N> Board<N>::make_init_board(Tiles<N> tiles){ // O(n^2)
   uint emptyIndex;
   for(uint i=0; i< Board<N>::SIZE; ++i)
     if(tiles[i] == 0)
@@ -91,7 +90,7 @@ Board<N> Board<N>::make_init_board(std::array<byte, Board<N>::SIZE> tiles){ // O
 };
 
 template <uint N>
-int Board<N>::oneManhattan(std::array<byte, Board<N>::SIZE> tiles, uint newIndex){ // O(1), kursejme shume kohe per femijet
+int Board<N>::oneManhattan(Tiles<N> tiles, uint newIndex){ // O(1), kursejme shume kohe per femijet
   int i = newIndex / N;
   int j = newIndex % N;
   uint current = tiles[i];

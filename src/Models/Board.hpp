@@ -13,17 +13,23 @@ namespace Models{
   using std::size_t;
 
 template <uint N>
-using Neighbors = structures::prealloc_stack<4, BoardDtos<N>>;
+using Tiles = std::array<N*N>;  // behaves as if it was a struct kinda, but we can use the operations and whatever
+// it hurts encapsulations but has not overhead, and easier to write
+
 
 template <uint N> struct BoardDtos{
   Board<N> board;
-  bool nextBox;
+  bool isNextBox;
 };
 
-template <size_t SIZE> constexpr
-std::array<byte, SIZE> generate_final_array(){
-  std::array<byte,SIZE> initializer;
-  for(size_t i=1; i<SIZE; i++){
+template <uint N>
+using Neighbors = structures::prealloc_stack<4, BoardDtos<N>>;
+
+template <uint N> constexpr
+Tiles<N> generate_final_array(){
+  Tiles<N> initializer;
+  uint SIZE = N*N;
+  for(uint i=1; i<SIZE; i++){
     initializer[i-1] = static_cast<byte>(i);
   }
   initializer[SIZE-1] = 0;
@@ -39,45 +45,45 @@ template <uint N> class Board{
     static constexpr std::array<byte,SIZE> FINAL = generate_final_array<SIZE>();
   
   private:  
-    std::array<byte, SIZE> tiles;
+    Tiles<N> tiles;
     uint emptyIndex;
-    size_t hash;	//caching the hashCode, so we don't recompute the string each time
 
   public:
     inline int getEmptyIndex() const{
       return emptyIndex;
     }
-    inline size_t getHash() const{
-      return hash;
-    }
-    inline std::array<byte, SIZE> getTiles() const{
+
+    inline Tiles<N> getTiles() const{
       return tiles;
     }
   
   Board() = default;  // this should never be actually used by anyone, but i need it for copy and move semantics
   // just to be able to allocate space without playing games and whatnot
 
-  Board(std::array<byte, SIZE> tiles, uint emptyIndex) :
+  Board(Tiles<N> tiles, uint emptyIndex) :
     tiles{ tiles },
-    emptyIndex{ emptyIndex },
-    hash{ hasher(std::string(tiles.begin(), tiles.end())) }
+    emptyIndex{ emptyIndex }
   { }
   
-  static Board<N> make_init_board(std::array<byte, SIZE> tiles); // O(SIZE) //Only used once
+  static Board<N> make_init_board(Tiles<N> tiles); // O(SIZE) //Only used once
   
   inline std::string toString() const {
     return toString(tiles);
   }
+  
+  inline size_t getHash() const{
+    return hasher(std::string{this->tiles.begin(), this->tiles.end()});
+  }
 
   bool isGoal() const;
 
-  static std::string toString(std::array<byte, SIZE> tiles);
+  static std::string toString(Tiles<N> tiles);
 
   Neighbors<N> neighbors();
   
   BoardDtos<N> makeNeighbor(uint newEmpty) const;
   
-  static int oneManhattan(std::array<byte, SIZE> tiles, uint newIndex);
+  static int oneManhattan(Tiles<N> tiles, uint newIndex);
 
   bool isSolvable() const;
   bool isSolvableOdd() const;
@@ -92,9 +98,8 @@ template <uint N> class Board{
   inline bool operator!=(const Board& other) const {
     return ! (this->equals(other));
   }
+
   inline bool equals(const Board& other) const {
-    if (hash != other.hash) // hoping for an early return
-      return false;
     return this->tiles ==  other.tiles;
   }
   // we have manhattan here, but let's just implement the comparison in the searchNode;
