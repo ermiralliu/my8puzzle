@@ -6,12 +6,16 @@
 // ... (Board, BoardSave, SearchNode class declarations as before)
 using Tiles = Models::Tiles<4>;
 
+// std::hash is stateless, so no thread-related problems if you use it on more than one thread
+constexpr std::hash<uint64_t> tileHasher{};
+
 std::list<Board> Solver::solution() {
   constexpr auto hashingFunction = [](Tiles tiles) {  // this should be done with an if constexpr for row_sizes other than 4
-    return std::hash<uint64_t>{}(tiles.getValue());
+    return tileHasher(tiles.toLong());
   };
   std::unordered_set<Tiles, decltype(hashingFunction)> finished;
-  std::deque<SearchNode> queue;
+  std::deque<SearchNode> queue; // I'm using this as a stack, but i wanted to avoid huge reallocations and copyings
+  // since this one is made of many arrays instead
   int id = 0;
   queue.emplace_back(SearchNode{-1,id++,initial});
 

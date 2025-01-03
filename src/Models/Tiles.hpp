@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstdint> // For uint64_t
+#include <cstring> // For memcpy
 #include <array>
 
 // also it's unsiged
@@ -101,6 +102,12 @@ public:
   inline bool equals(Tiles other) const {
     return this->pattern == other.pattern;
   }
+
+  uint64_t toLong(){  // this will be how this particular Tile pattern in save in the database
+    uint64_t result;
+    std::memcpy(&result, pattern.data(), sizeof(result));
+    return result;
+  } 
 
 };
 // hbl.setNibble(0, 0xA); // Set the least significant nibble to 10 (0xA)
