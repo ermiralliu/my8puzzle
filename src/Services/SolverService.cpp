@@ -4,7 +4,7 @@
 #include <algorithm>
 
 // ... (Board, BoardSave, SearchNode class declarations as before)
-using Tiles = Models::Tiles<4>;
+using Tiles = Models::Tiles<N>;
 
 // std::hash is stateless, so no thread-related problems if you use it on more than one thread
 constexpr std::hash<uint64_t> tileHasher{};
@@ -27,14 +27,18 @@ std::list<Board> Solver::solution() {
     while (!queue.empty()) {
       SearchNode currentNode = queue.back();
       queue.pop_back();
+      std::cout<< moves++<<"\n";
 
       finished.insert(currentNode.board.getTiles());
 
       if (currentNode.board.isGoal()) {
         finalNode = &currentNode;
+        std::cout<< "Queue size: "<< queue.size()<< "Set size: " << finished.size()<< "\n";
         return makeHistory(finalNode);
       } else {
+        std::cout<< "Entered within the else \n";
         for (auto neighbor : currentNode.board.neighbors()) {
+          std::cout<< "Entered within the neighbor \n";
           Board board = neighbor.board;
           bool isNextBox = neighbor.isNextBox;
           if (finished.count(board.getTiles())) {

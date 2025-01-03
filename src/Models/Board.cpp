@@ -5,10 +5,23 @@
 #include "../Helpers/MergeSort.hpp"
 #include "Board.hpp"
 #include <algorithm>
+#include <iostream>
 
 // actually managed to compile this successfully using -Wall
 
 namespace Models{
+
+template <uint N>
+void print_array(const std::array<byte, N*N>& arr) {
+  std::cout << "[";
+  for (uint i = 0; i < arr.size(); ++i) {
+    std::cout << static_cast<int>(arr[i]); // Print as int (decimal)
+    if (i < arr.size() - 1) {
+      std::cout << ", ";
+    }
+  }
+  std::cout << "]" << std::endl; // Output: [72, 101, 108, 108, 111]
+}
 
 template <uint N>  
 Neighbors<N> Board<N>::neighbors(){
@@ -66,7 +79,18 @@ BoardDtos<N> Board<N>::makeNeighbor(uint newEmpty) const { //returns a new board
   
   int manhattan_second = oneManhattan(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
   bool next_box = manhattan_second - manhattan_first > 0;
+  
+  std::array<byte, N*N> toPrint;
+  for(uint i=0; i<toPrint.size(); i++){
+    toPrint[i] = tiles.get(i);
+  }
+  print_array<N>(toPrint);
 
+  for(uint i=0; i<toPrint.size(); i++){
+    toPrint[i] = next_tiles.get(i);
+  }
+  print_array<N>(toPrint);
+  
   return { 
     Board {
       next_tiles,
@@ -82,6 +106,7 @@ Board<N> Board<N>::make_init_board(std::array<byte, Board<N>::SIZE> tiles){ // O
   for(uint i=0; i< Board<N>::SIZE; ++i)
     if(tiles[i] == 0)
       emptyIndex = i;
+  std::cout<< emptyIndex<<"\n";
   return Board{ Tiles<N>{tiles}, emptyIndex};
 };
 
@@ -110,7 +135,7 @@ bool Board<N>::isSolvableOdd() const { // nese nr i inversions eshte odd, nuk ka
 template <uint N>
 bool Board<N>::isSolvableEven() const { // zgjidhet vetem nese nr i inversioneve, plus rreshti i 0-s jane odd
   auto invCount = findInversions();
-  uint empty_row = emptyIndex / Board<N>::SIZE;
+  uint empty_row = emptyIndex / N;
   if ((invCount + empty_row) % 2 == 1){
     return true;
   }
@@ -120,7 +145,7 @@ bool Board<N>::isSolvableEven() const { // zgjidhet vetem nese nr i inversioneve
 template <uint N>
 int Board<N>::findInversions() const{ //this only gets called once, so it shouldn't be a memory bottleneck
 //or
-  int flattenedArray[Board<N>::SIZE-1]; // nuk e perfshijme 0-n
+  std::array<int, Board::SIZE-1> flattenedArray; // nuk e perfshijme 0-n
   { //inicializojme flattened array
     int index = 0;
     for(uint i=0; i< SIZE; i++){
@@ -130,9 +155,9 @@ int Board<N>::findInversions() const{ //this only gets called once, so it should
       flattenedArray[index++] = element;  
     }
   }
-  int aux[Board<N>::SIZE-1];
-  std::copy(flattenedArray, std::end(flattenedArray), std::begin(aux));
-  int invCount = MergeSort::mergesort(flattenedArray, aux, 0, SIZE - 2); // duhet ta studioj kete
+  std::array<int, Board::SIZE-1> aux = flattenedArray;
+
+  int invCount = MergeSort::mergesort(flattenedArray.data(), aux.data(), 0, SIZE - 2); // duhet ta studioj kete
   return invCount;
 }
 // we have manhattan here, but let's just implement the comparison in the searchNode;

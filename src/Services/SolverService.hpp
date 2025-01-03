@@ -5,6 +5,7 @@
 #include "../Models/SearchNode.hpp"
 #include <list>
 
+// This is where the size is set
 constexpr int N = 4;
 
 using Board = Models::Board<N>;

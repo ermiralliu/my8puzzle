@@ -1,5 +1,7 @@
 ﻿#include <iostream>
 #include <fstream>
+// #include <ostream>
+#include <iterator>
 #include <vector>
 #include <string>
 #include <chrono>
@@ -14,59 +16,74 @@
 
 using byte = unsigned char;
 
+
+template <uint N>
+void print_array(const std::array<byte, N*N>& arr) {
+  std::cout << "[";
+  for (uint i = 0; i < arr.size(); ++i) {
+    std::cout << static_cast<int>(arr[i]); // Print as int (decimal)
+    if (i < arr.size() - 1) {
+      std::cout << ", ";
+    }
+  }
+  std::cout << "]" << std::endl; // Output: [72, 101, 108, 108, 111]
+}
+
 int main(int argc, char* argv[]) {
-    std::cout << "hello world" << std::endl;
+  std::cout << "hello world" << std::endl;
 
-    // For each command-line argument
-    for (int i = 1; i < argc; ++i) { // Start from index 1 (argv[0] is the program name)
-        std::string filename = argv[i];
-        std::cout << filename << std::endl;
+  // For each command-line argument
+  for (int i = 1; i < argc; ++i) { // Start from index 1 (argv[0] is the program name)
+    std::string filename = argv[i];
+    std::cout << filename << std::endl;
 
-        // std::vector<unsigned char> tiles;
-        std::array<byte, N*N> tiles;
-        int n = -1;
+    // std::vector<unsigned char> tiles;
+    std::array<byte, N* N> tiles;
+    int n = -1;
 
-        try {
-            std::ifstream inputFile(filename);
-            if (!inputFile.is_open()) {
-                throw std::runtime_error("Could not open file: " + filename);
-            }
-
-            inputFile >> n;
-            if (n <= 0) {
-                throw std::invalid_argument("Invalid board size n");
-            }
-            // tiles.resize(n * n);
-            for (int j = 0; j < n * n; ++j) {
-                int tileValue;
-                inputFile >> tileValue;
-                if (tileValue < 0 || tileValue > 255) {
-                    throw std::invalid_argument("Tile value out of range");
-                }
-                tiles[j] = static_cast<unsigned char>(tileValue);
-            }
-            inputFile.close();
-        } catch (const std::exception& e) {
-            std::cerr << "Error reading file: " << e.what() << std::endl;
-            continue; // Skip to the next file
+    try {
+      std::ifstream inputFile(filename);
+      if (!inputFile.is_open()) {
+        throw std::runtime_error("Could not open file: " + filename);
+      }
+      inputFile >> n;
+      std::cout << static_cast<int>(n) + "\n";
+      if (n <= 0) {
+        throw std::invalid_argument("Invalid board size n");
+      }
+      // tiles.resize(n * n);
+      for (int j = 0; j < n * n; ++j) {
+        int tileValue;
+        inputFile >> tileValue;
+        if (tileValue < 0 || tileValue > 255) {
+          throw std::invalid_argument("Tile value out of range");
         }
-
-        // Solve the slider puzzle
-        auto initial = Board::make_init_board(tiles);
-        if (!initial.isSolvable()) {
-            std::cout << "No solution possible\n" << std::endl;
-        } else {
-            Solver solver = Solver(initial);
-
-            auto startTime = std::chrono::high_resolution_clock::now();
-            auto boards = solver.solution();
-            auto endTime = std::chrono::high_resolution_clock::now();
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
-
-            std::cout << "Minimum number of moves = " << solver.getMoves() << "\n" << std::endl;
-            std::cout << "Time elapsed: " << elapsed << " ms" << std::endl;
-        }
+        std::cout << static_cast<int>(tileValue) + " ";
+        tiles[j] = static_cast<unsigned char>(tileValue);
+      }
+      inputFile.close();
+    } catch (const std::exception& e) {
+      std::cerr << "Error reading file: " << e.what() << std::endl;
+      continue; // Skip to the next file
     }
 
-    return 0;
+    // Solve the slider puzzle
+    auto initial = Board::make_init_board(tiles);
+    print_array<N>(tiles);  // N is defined in SolverService.hpp
+    if (!initial.isSolvable()) {
+      std::cout << "No solution possible\n" << std::endl;
+    } else {
+      Solver solver = Solver(initial);
+
+      auto startTime = std::chrono::high_resolution_clock::now();
+      auto boards = solver.solution();
+      auto endTime = std::chrono::high_resolution_clock::now();
+      auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+
+      std::cout << "Minimum number of moves = " << solver.getMoves() << "\n" << std::endl;
+      std::cout << "Time elapsed: " << elapsed << " ms" << std::endl;
+    }
+  }
+
+  return 0;
 }

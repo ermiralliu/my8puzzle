@@ -61,9 +61,11 @@ public:
   // I really made a constexpr constructor
   // crazy
   Tiles(std::array<byte, 16> initialTiles) {
+    // std::cout << "right constructor called\n";
     Tiles patt{};
     for (int i = 0; i< 16;i++)
       patt.set(i, initialTiles[i]);
+    this->pattern = patt.pattern;
   }
 
   static Tiles makeNext(Tiles initial, byte emptyIndex, byte newEmpty) {
