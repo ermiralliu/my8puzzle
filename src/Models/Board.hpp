@@ -35,7 +35,7 @@ Tiles<N> generate_final_array(){
 };
 
 template <> constexpr Tiles<4> generate_final_array<4>(){
-  return Tiles<4>{ 0xf0edcba987654321 };  // these are numbers 1-15 then 0 squished in a single long
+  return Tiles<4>{ std::array<byte,8>{0xf0, 0xed, 0xcb, 0xa9, 0x87, 0x65, 0x43, 0x21 }};  // these are numbers 1-15 then 0 squished in a single long
 }
 
 template <uint N> class Board{ 

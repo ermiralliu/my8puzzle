@@ -48,19 +48,20 @@ public:
 };
 
 // specialization for boards with ROW_SIZE = 4;
+// this was initially 
 template<> struct Tiles<4> {
 private:
-  uint64_t pattern;
+  std::array<byte,8> pattern;
 
 public:
   Tiles() = default;
 
-  constexpr Tiles(uint64_t initialValue) : pattern{ initialValue } {} // I didn't know c++ had default values
+  constexpr Tiles(std::array<byte,8> initialValue) : pattern{ initialValue } {} // I didn't know c++ had default values
   // I really made a constexpr constructor
   // crazy
   Tiles(std::array<byte, 16> initialTiles) {
     Tiles patt{};
-    for (int i = 0;i < 16;i++)
+    for (int i = 0; i< 16;i++)
       patt.set(i, initialTiles[i]);
   }
 
@@ -71,19 +72,22 @@ public:
     return next;
   };
 
-  inline uint64_t getValue() const {
+  inline std::array<byte,8> getValue() const {
     return pattern;
   }
-
   // private:
 
   inline void set(int index, byte nibbleValue) {
-    uint64_t mask = 0xFLL << (index * 4); // Create a mask for the nibble
-    pattern = (pattern & ~mask) | (static_cast<uint64_t>(nibbleValue) << (index * 4));
+    size_t byteIndex = index / 2;
+    size_t nibbleInByte = index % 2;
+    uint8_t mask = 0x0F << (nibbleInByte * 4);
+    pattern[byteIndex] = (pattern[byteIndex] & ~mask) | (nibbleValue << (nibbleInByte * 4));
   }
 
   inline byte get(int index) const {
-    return static_cast<unsigned char>((pattern >> (index * 4)) & 0xF);
+    size_t byteIndex = index / 2;
+    size_t nibbleInByte = index % 2;
+    return (pattern[byteIndex] >> (nibbleInByte * 4)) & 0x0F;
   }
 
   inline bool operator==(Tiles other) const {
