@@ -2,7 +2,7 @@
 #define BOARD_HPP
 #include <string> // std::string
 #include <array>
-
+#include <iostream>
 #include "Board_head.hpp"
 #include "Tiles.hpp"
 #include "../structures/PreAllocatedStack.hpp"
@@ -10,9 +10,24 @@
 // compiled using wall
 // it's all
 
+
+
 namespace Models{
   using byte = unsigned char;
   using std::size_t;
+
+
+template <std::size_t N>
+void print_array(const std::array<byte, N*N>& arr) {
+  std::cout << "[";
+  for (std::size_t i = 0; i < arr.size(); ++i) {
+    std::cout << static_cast<int>(arr[i]); // Print as int (decimal)
+    if (i < arr.size() - 1) {
+      std::cout << ", ";
+    }
+  }
+  std::cout << "]" << std::endl; // Output: [72, 101, 108, 108, 111]
+}
 
 template <size_t N> struct BoardDtos{
   Board<N> board;
@@ -76,13 +91,13 @@ template <size_t N> class Board{
     return tiles == Board<N>::FINAL;
   }
 
-  static std::string toString(Tiles<N> tiles);
+  static std::string toString(const Tiles<N>& tiles);
 
   Neighbors<N> neighbors();
   
   BoardDtos<N> makeNeighbor(std::uint32_t newEmpty) const;
   
-  static int oneManhattan(Tiles<N> tiles, std::uint32_t newIndex);
+  static int oneManhattan(const Tiles<N>& tiles, std::uint32_t newIndex);
 
   bool isSolvable() const;
   bool isSolvableOdd() const;

@@ -22,7 +22,7 @@ private:
 public:
   constexpr Tiles(std::array<byte, N* N> initialValue) : pattern{ initialValue } {}
 
-  static Tiles makeNext(Tiles initial, byte emptyIndex, byte newEmpty){
+  static Tiles makeNext(const Tiles& initial, byte emptyIndex, byte newEmpty){
     Tiles next{initial};
     next.pattern[emptyIndex] = next.pattern[newEmpty];  // futim nr e ri ne pozicionin bosh
     next.pattern[newEmpty] = 0; // levizim pozicionin bosh
@@ -39,15 +39,15 @@ public:
     pattern[index] = nibbleValue;
   }
 
-  inline bool operator==(Tiles other) const {
+  inline bool operator==(const Tiles& other) const {
     return this->pattern == other.pattern;
   }
 
-  inline bool operator!=(Tiles other) const {
+  inline bool operator!=(const Tiles& other) const {
     return this->pattern != other.pattern;
   }
 
-  inline bool equals(Tiles other) const {
+  inline bool equals(const Tiles& other) const {
     return this->pattern == other.pattern;
   }
 
@@ -62,10 +62,10 @@ private:
 public:
   constexpr Tiles() = default;
 
-  constexpr Tiles(std::array<byte,8> initialValue) : pattern{ initialValue } {}
+  constexpr Tiles(const std::array<byte,8>& initialValue) : pattern{ initialValue } {}
   // I really made a constexpr constructor
   // crazy
-  constexpr Tiles(std::array<byte, 16> initialTiles) {
+  constexpr Tiles(const std::array<byte, 16>& initialTiles) {
   // std::cout << "right constructor called\n";
     Tiles<4> patt{};
     for (int i = 0; i< 16;i++)
@@ -73,7 +73,7 @@ public:
     this->pattern = patt.pattern;
   };
 
-  static Tiles makeNext(Tiles initial, byte emptyIndex, byte newEmpty) {
+  static Tiles makeNext(const Tiles& initial, byte emptyIndex, byte newEmpty) {
     Tiles next{ initial };
     next.set(emptyIndex, initial.get(newEmpty));
     next.set(newEmpty, 0);
@@ -98,20 +98,20 @@ public:
     return (pattern[byteIndex] >> (nibbleInByte * 4)) & 0x0F;
   };
 
-  inline bool operator==(Tiles other) const {
+  inline bool operator==(const Tiles& other) const {
     return this->pattern == other.pattern;
   }
 
-  inline bool operator!=(Tiles other) const {
+  inline bool operator!=(const Tiles& other) const {
     return this->pattern != other.pattern;
   }
 
-  inline bool equals(Tiles other) const {
+  inline bool equals(const Tiles& other) const {
     return this->pattern == other.pattern;
   }
 
-  std::uint64_t toLong(){  // this will be how this particular Tile pattern in save in the database
-    std::uint64_t result;
+  std::size_t toLong() const{  // this will be how this particular Tile pattern in save in the database
+    std::size_t result;
     std::memcpy(&result, pattern.data(), sizeof(result));
     return result;
   } 

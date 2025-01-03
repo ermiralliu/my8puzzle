@@ -15,7 +15,7 @@ struct SearchNode{
 
     SearchNode() = default;
 
-    SearchNode(int previous, int id, Board<N> current, int moves) : 
+    SearchNode(int previous, int id, const Board<N>& current, int moves) : 
       previous_board_id{previous},
       id{id},
       board{current},

@@ -1,19 +1,26 @@
 #include "SolverService.hpp"
+#include <cstddef>
 #include <unordered_set>
 #include <stack>
 
 // ... (Board, BoardSave, SearchNode class declarations as before)
 using Tiles = Models::Tiles<N>;
 
+struct BoardHash {
+  static constexpr std::hash<std::size_t> tileHasher{};
+  std::size_t operator()(const Tiles& k) const {
+    return tileHasher(k.toLong()); // Use std::hash for int
+  }
+};
+
 // std::hash is stateless, so no thread-related problems if you use it on more than one thread
-constexpr std::hash<std::uint64_t> tileHasher{};
+
+using BoardMap = std::unordered_set<Tiles, BoardHash>;
 
 std::list<Board> Solver::solution() {
-  constexpr auto hashingFunction = [](Tiles tiles) {  // this should be done with an if constexpr for row_sizes other than 4
-    return tileHasher(tiles.toLong());
-  };
-  std::unordered_set<Tiles, decltype(hashingFunction)> finished;
-  std::stack<SearchNode> queue;
+
+  BoardMap finished{};
+  std::stack<SearchNode> queue{};
   int id = 0;
   queue.push(SearchNode{-1,id++,initial,0});
 
@@ -33,6 +40,10 @@ std::list<Board> Solver::solution() {
         finalNode = &currentNode;
         moves = currentNode.moves;
         std::cout<< "Queue size: "<< queue.size()<< ", Set size: " << finished.size()<< "\n";
+        std::cout<< "Next box: " << nextBox.size() << "\n";
+        std::stack<SearchNode>{}.swap(queue);
+        std::stack<SearchNode>{}.swap(nextBox);
+        BoardMap{}.swap(finished);
         return makeHistory(finalNode);
       } else {
         // std::cout<< "Entered within the else \n";

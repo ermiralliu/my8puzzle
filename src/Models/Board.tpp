@@ -2,23 +2,10 @@
 // the include down below generated the problem which i ignored in my .clangd
 // I checked the directory tree and it was all fine though 
 #include "Board.hpp"
-#include <iostream>
 
 // actually managed to compile this successfully using -Wall
 
 namespace Models{
-
-template <std::size_t N>
-void print_array(const std::array<byte, N*N>& arr) {
-  std::cout << "[";
-  for (std::size_t i = 0; i < arr.size(); ++i) {
-    std::cout << static_cast<int>(arr[i]); // Print as int (decimal)
-    if (i < arr.size() - 1) {
-      std::cout << ", ";
-    }
-  }
-  std::cout << "]" << std::endl; // Output: [72, 101, 108, 108, 111]
-}
 
 template <std::size_t N>  
 Neighbors<N> Board<N>::neighbors(){
@@ -51,7 +38,7 @@ bool Board<N>::isSolvable() const{
 }
 
 template <std::size_t N>
-std::string Board<N>::toString(Tiles<N> tiles){
+std::string Board<N>::toString(const Tiles<N>& tiles){
   std::string str; //preallocating all the space needed;
   str.reserve(N + SIZE*2 + 4);
   str.append(std::to_string(N) + "\n");
@@ -97,7 +84,7 @@ Board<N> Board<N>::make_init_board(std::array<byte, Board<N>::SIZE> tiles){ // O
 };
 
 template <std::size_t N>
-int Board<N>::oneManhattan(Tiles<N> tiles, std::uint32_t newIndex){ // O(1), kursejme shume kohe per femijet
+int Board<N>::oneManhattan(const Tiles<N>& tiles, std::uint32_t newIndex){ // O(1), kursejme shume kohe per femijet
   int i = newIndex / N;
   int j = newIndex % N;
   std::size_t current = tiles.get(newIndex);

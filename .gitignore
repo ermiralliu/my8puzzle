@@ -3,3 +3,4 @@ backups
 out
 backups
 .vscode
+.cache

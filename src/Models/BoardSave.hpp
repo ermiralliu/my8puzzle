@@ -1,4 +1,4 @@
-#include <cstdint>
+#include <cstdlib>
 #include <array>
 
 namespace Models {
@@ -8,23 +8,25 @@ struct BoardSave {
   using byte =  unsigned char;
   private:
       std::array<byte,N*N> tiles;
-      size_t hash;
+      std::size_t hash;
 
   public:
     BoardSave() = default;
     
-    BoardSave(std::array<byte,N*N> tiles, size_t hash) :
+    BoardSave(std::array<byte,N*N> tiles, std::size_t hash) :
       tiles{tiles},
       hash{hash}
     { }
 
-    inline size_t getHash() const {
+    inline std::size_t getHash() const {
       return hash;
     }
-    inline std::array<byte,N*N> getTiles const{
+
+    inline std::array<byte,N*N> getTiles() const{
       return tiles;
     }
-    inline operator==(BoardSave& bord){
+
+    inline bool operator==(BoardSave& bord){
       return tiles == bord.tiles;
     }
 

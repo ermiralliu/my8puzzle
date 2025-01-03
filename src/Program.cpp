@@ -13,19 +13,6 @@
 
 using byte = unsigned char;
 
-
-template <std::size_t N>
-void print_array(const std::array<byte, N*N>& arr) {
-  std::cout << "[";
-  for (std::size_t i = 0; i < arr.size(); ++i) {
-    std::cout << static_cast<int>(arr[i]); // Print as int (decimal)
-    if (i < arr.size() - 1) {
-      std::cout << ", ";
-    }
-  }
-  std::cout << "]" << std::endl; // Output: [72, 101, 108, 108, 111]
-}
-
 int main(int argc, char* argv[]) {
   std::cout << "hello world" << std::endl;
 
@@ -64,7 +51,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Solve the slider puzzle
-    print_array<N>(tiles);  // N is defined in SolverService.hpp
+    Models::print_array<N>(tiles);  // N is defined in SolverService.hpp
     auto initial = Board::make_init_board(tiles);
     if (!initial.isSolvable()) {
       std::cout << "No solution possible\n" << std::endl;
