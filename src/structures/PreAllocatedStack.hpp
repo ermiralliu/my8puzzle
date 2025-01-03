@@ -5,8 +5,6 @@
 #include "../Models/Board_head.hpp"
 #include <utility>
 
-template <size_t N> class Board; // Forward declaration
-
 namespace structures{
 using std::size_t;
 
@@ -20,7 +18,7 @@ struct prealloc_stack{ // The idea is that we know the limit, so we don't do che
   }
 
   inline void push(T data){ // we have to be very careful here, cause it might lead to a overflow( but it wont)
-    *(end_ptr) = std::move(data);
+    *(end_ptr) = data;
     ++end_ptr;
   }
   inline T* begin() { 

@@ -5,11 +5,12 @@
 #include <chrono>
 #include <stdexcept> // For exceptions like std::invalid_argument
 
-#include "Models/Board.hpp"
+#include "Services/SolverService.hpp"
 
-using Models::Board;
-constexpr uint ROW_SIZE = 4;
-constexpr uint SIZE = ROW_SIZE*ROW_SIZE;
+// in the end i set the bottom two within solver service
+// bad design but whatever
+// constexpr uint ROW_SIZE = 4;
+// constexpr uint SIZE = ROW_SIZE*ROW_SIZE;
 
 using byte = unsigned char;
 
@@ -22,7 +23,7 @@ int main(int argc, char* argv[]) {
         std::cout << filename << std::endl;
 
         // std::vector<unsigned char> tiles;
-        std::array<byte, SIZE> tiles;
+        std::array<byte, N*N> tiles;
         int n = -1;
 
         try {
@@ -51,20 +52,20 @@ int main(int argc, char* argv[]) {
         }
 
         // Solve the slider puzzle
-        auto initial = Board<ROW_SIZE>::make_init_board(tiles);
-        // if (!initial.isSolvable()) {
-        //     std::cout << "No solution possible\n" << std::endl;
-        // } else {
-        //     Solver solver = Solver(initial);
+        auto initial = Board::make_init_board(tiles);
+        if (!initial.isSolvable()) {
+            std::cout << "No solution possible\n" << std::endl;
+        } else {
+            Solver solver = Solver(initial);
 
-        //     auto startTime = std::chrono::high_resolution_clock::now();
-        //     std::list<Board> boards = solver.solution();
-        //     auto endTime = std::chrono::high_resolution_clock::now();
-        //     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+            auto startTime = std::chrono::high_resolution_clock::now();
+            auto boards = solver.solution();
+            auto endTime = std::chrono::high_resolution_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 
-        //     std::cout << "Minimum number of moves = " << solver.moves() << "\n" << std::endl;
-        //     std::cout << "Time elapsed: " << elapsed << " ms" << std::endl;
-        // }
+            std::cout << "Minimum number of moves = " << solver.getMoves() << "\n" << std::endl;
+            std::cout << "Time elapsed: " << elapsed << " ms" << std::endl;
+        }
     }
 
     return 0;

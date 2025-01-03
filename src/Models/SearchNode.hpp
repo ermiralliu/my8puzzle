@@ -13,21 +13,12 @@ struct SearchNode{
 
     SearchNode() = default;
 
-    SearchNode(int previous, int id, Board current) : 
+    SearchNode(int previous, int id, Board<N> current) : 
       previous_board_id{previous},
       id{id},
       board{current}
     {}
-      
-    static int Compare(SearchNode a, SearchNode b) {  // this will just be declared as a lambda in SolverService
-      int manha = a.manhattanPriority - b.manhattanPriority;
-      return manha;
-    }
-    
-    inline int manhattanPriority() const {
-      return board.ManhattanDistance + moves;
-    }
-      // nese eshte 0, athere s'ka pas prind
+
   };
 
 }

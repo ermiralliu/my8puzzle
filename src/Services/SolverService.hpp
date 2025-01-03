@@ -1,19 +1,26 @@
-#include "Models/Board.hpp"
-#include "Models/SearchNode.hpp"
+#ifndef SOLVER_HPP
+#define SOLVER_HPP
+
+#include "../Models/Board.hpp"
+#include "../Models/SearchNode.hpp"
 #include <list>
-
-using Models::Board;
-using Models::SearchNode;
-
 
 constexpr int N = 4;
 
+using Board = Models::Board<N>;
+using SearchNode = Models::SearchNode<N>;
+
 class Solver {
 private:
-    Board<N> initial;
+  Board initial;
+  uint moves;
 public:
-    Solver(const Board<N>& initial) : initial(initial) {}
-    std::list<Board<N>> solution();
+  uint getMoves() const{
+    return moves;
+  }
+  Solver(const Board& initial) : initial(initial) {}
+  std::list<Board> solution();
 private:
-    std::list<Board<N>> makeHistory(SearchNode<N>* node);
+  std::list<Board> makeHistory(SearchNode* node);
 };
+#endif

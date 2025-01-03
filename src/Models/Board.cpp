@@ -10,10 +10,6 @@
 
 namespace Models{
 
-template <uint N>  bool Board<N>::isGoal() const {
-  return tiles == Board<N>::FINAL;
-};
-
 template <uint N>  
 Neighbors<N> Board<N>::neighbors(){
   structures::empty_indexes sides {};
@@ -47,13 +43,13 @@ bool Board<N>::isSolvable() const{
 template <uint N>
 std::string Board<N>::toString(Tiles<N> tiles){
   std::string str; //preallocating all the space needed;
-  str.reserve(N + SIZE + 4);
+  str.reserve(N + SIZE*2 + 4);
   str.append(std::to_string(N) + "\n");
 
   int count = 0;
   for (uint i = 0; i < N; i++){
     for (uint j = 0; j < N; j++){
-      str.append(std::to_string(tiles[count++]));
+      str.append(std::to_string(tiles.get(count++)));
     }
     str.append("\n");
   }
@@ -63,17 +59,17 @@ std::string Board<N>::toString(Tiles<N> tiles){
 template <uint N>
 BoardDtos<N> Board<N>::makeNeighbor(uint newEmpty) const { //returns a new board + a bool which is true if it needs
 // to go to the next box
-  Tiles<N> next_tiles = tiles;
   
-  int manhattan_first = oneManhattan(next_tiles, newEmpty);
-  next_tiles[emptyIndex] = next_tiles[newEmpty];  // futim nr e ri ne pozicionin bosh
-  next_tiles[newEmpty] = 0; // levizim pozicionin bosh
+  int manhattan_first = oneManhattan(tiles, newEmpty);
+
+  Tiles<N> next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
+  
   int manhattan_second = oneManhattan(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
   bool next_box = manhattan_second - manhattan_first > 0;
 
   return { 
     Board {
-      next_tiles, // O(n) per shallow copy
+      next_tiles,
       newEmpty
     }, 
     next_box
@@ -81,19 +77,19 @@ BoardDtos<N> Board<N>::makeNeighbor(uint newEmpty) const { //returns a new board
 }
 
 template <uint N>
-Board<N> Board<N>::make_init_board(Tiles<N> tiles){ // O(n^2)
+Board<N> Board<N>::make_init_board(std::array<byte, Board<N>::SIZE> tiles){ // O(n^2)
   uint emptyIndex;
   for(uint i=0; i< Board<N>::SIZE; ++i)
     if(tiles[i] == 0)
       emptyIndex = i;
-  return Board{tiles, emptyIndex};
+  return Board{ Tiles<N>{tiles}, emptyIndex};
 };
 
 template <uint N>
 int Board<N>::oneManhattan(Tiles<N> tiles, uint newIndex){ // O(1), kursejme shume kohe per femijet
   int i = newIndex / N;
   int j = newIndex % N;
-  uint current = tiles[i];
+  uint current = tiles.get(newIndex);
   uint index = current - 1;
   int needed_row = index / N;
   int needed_column = index % N;
@@ -127,10 +123,11 @@ int Board<N>::findInversions() const{ //this only gets called once, so it should
   int flattenedArray[Board<N>::SIZE-1]; // nuk e perfshijme 0-n
   { //inicializojme flattened array
     int index = 0;
-    for(const auto& element : tiles){
-      if (element == 0)
+    for(uint i=0; i< SIZE; i++){
+      byte element = tiles.get(i);
+      if(element == 0)
         continue;
-      flattenedArray[index++] = element;
+      flattenedArray[index++] = element;  
     }
   }
   int aux[Board<N>::SIZE-1];

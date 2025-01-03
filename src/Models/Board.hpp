@@ -1,7 +1,10 @@
+#ifndef BOARD_HPP
+#define BOARD_HPP
 #include <functional> // For hash
 #include <string> // std::string
 #include <array>
 #include "Board_head.hpp"
+#include "Tiles.hpp"
 
 #include "../structures/PreAllocatedStack.hpp"
 
@@ -11,11 +14,6 @@
 namespace Models{
   using byte = unsigned char;
   using std::size_t;
-
-template <uint N>
-using Tiles = std::array<N*N>;  // behaves as if it was a struct kinda, but we can use the operations and whatever
-// it hurts encapsulations but has not overhead, and easier to write
-
 
 template <uint N> struct BoardDtos{
   Board<N> board;
@@ -27,22 +25,26 @@ using Neighbors = structures::prealloc_stack<4, BoardDtos<N>>;
 
 template <uint N> constexpr
 Tiles<N> generate_final_array(){
-  Tiles<N> initializer;
   uint SIZE = N*N;
+  std::array<byte,N*N> initializer;
   for(uint i=1; i<SIZE; i++){
     initializer[i-1] = static_cast<byte>(i);
   }
   initializer[SIZE-1] = 0;
-  return initializer;
+  return Tiles<N>{initializer};
 };
 
+template <> constexpr Tiles<4> generate_final_array<4>(){
+  return Tiles<4>{ 0xf0edcba987654321 };  // these are numbers 1-15 then 0 squished in a single long
+}
+
 template <uint N> class Board{ 
-  private:
-    static constexpr std::hash<std::string> hasher {};
+  // private:
+  //   static constexpr std::hash<std::string> hasher {};
     // static constexpr uint N_uns = static_cast<uint> N;
   public:
     static constexpr uint SIZE = N*N;
-    static constexpr std::array<byte,SIZE> FINAL = generate_final_array<SIZE>();
+    static constexpr Tiles<N> FINAL = generate_final_array<N>();
   
   private:  
     Tiles<N> tiles;
@@ -65,17 +67,19 @@ template <uint N> class Board{
     emptyIndex{ emptyIndex }
   { }
   
-  static Board<N> make_init_board(Tiles<N> tiles); // O(SIZE) //Only used once
+  static Board<N> make_init_board(std::array<byte, SIZE> tiles); // O(SIZE) //Only used once
   
   inline std::string toString() const {
     return toString(tiles);
   }
   
-  inline size_t getHash() const{
-    return hasher(std::string{this->tiles.begin(), this->tiles.end()});
-  }
+  // inline size_t getHash() const{
+  //   return hasher(std::string{this->tiles.begin(), this->tiles.end()});
+  // }
 
-  bool isGoal() const;
+  inline bool isGoal() const{
+    return tiles == Board<N>::FINAL;
+  }
 
   static std::string toString(Tiles<N> tiles);
 
@@ -92,11 +96,11 @@ template <uint N> class Board{
   int findInversions() const;
 
   inline bool operator==(const Board& other) const {
-    return this->equals(other);
+    return this->tiles ==  other.tiles;
   }
 
   inline bool operator!=(const Board& other) const {
-    return ! (this->equals(other));
+    return this->tiles !=  other.tiles;
   }
 
   inline bool equals(const Board& other) const {
@@ -113,3 +117,5 @@ template class Board<4>;
 
 
 }
+
+#endif

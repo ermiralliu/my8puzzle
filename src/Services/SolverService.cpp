@@ -4,53 +4,61 @@
 #include <algorithm>
 
 // ... (Board, BoardSave, SearchNode class declarations as before)
+using Tiles = Models::Tiles<4>;
 
-std::list<Board<N>> Solver::solution() {
-    std::unordered_set<Models::Tiles<N>> finished;
-    std::deque<SearchNode<N>> queue;
+std::list<Board> Solver::solution() {
+  constexpr auto hashingFunction = [](Tiles tiles) {  // this should be done with an if constexpr for row_sizes other than 4
+    return std::hash<uint64_t>{}(tiles.getValue());
+  };
+  std::unordered_set<Tiles, decltype(hashingFunction)> finished;
+  std::deque<SearchNode> queue;
+  int id = 0;
+  queue.emplace_back(SearchNode{-1,id++,initial});
 
-    queue.emplace_back(nullptr, initial);
+  SearchNode* finalNode = nullptr;
+  int boxNumber = 0;
 
-    SearchNode<N>* finalNode = nullptr;
-    int boxNumber = 0;
-
+  while (!queue.empty()) {
+    std::deque<SearchNode> nextBox;
     while (!queue.empty()) {
-        std::deque<SearchNode<N>> nextBox;
-        while (!queue.empty()) {
-            SearchNode currentNode = queue.back();
-            queue.pop_back();
+      SearchNode currentNode = queue.back();
+      queue.pop_back();
 
-            finished.insert( currentNode.board );
+      finished.insert(currentNode.board.getTiles());
 
-            if (currentNode.board.isGoal()) {
-                finalNode = &currentNode;
-                return makeHistory(finalNode);
-            } else {
-                for (auto neighbor : currentNode.board.neighbors()) {
-                    Board board = neighbor.board;
-                    bool isNextBox = neighbor.isNextBox;
-                    if (finished.count( board )) {
-                        continue;
-                    }
-                    nextBox.emplace_back(&currentNode, board);
-                }
-            }
+      if (currentNode.board.isGoal()) {
+        finalNode = &currentNode;
+        return makeHistory(finalNode);
+      } else {
+        for (auto neighbor : currentNode.board.neighbors()) {
+          Board board = neighbor.board;
+          bool isNextBox = neighbor.isNextBox;
+          if (finished.count(board.getTiles())) {
+            continue;
+          }
+          SearchNode nextSearchNode{currentNode.id, id++, board};
+          if (isNextBox)
+            nextBox.emplace_back(nextSearchNode);
+          else
+            queue.emplace_back(nextSearchNode);
         }
-        if (!nextBox.empty()) {
-            boxNumber++;
-            queue = std::move(nextBox); // Move the contents of nextBox to queue
-        }
+      }
     }
-    return std::list<Board<N>>();
+    if (!nextBox.empty()) {
+      boxNumber++;
+      queue = std::move(nextBox); // Move the contents of nextBox to queue
+    }
+  }
+  return std::list<Board>();
 }
 
-std::list<Board<N>> Solver::makeHistory(SearchNode<N>* node){
-    std::list<Board<N>> boards;
-    boards.push_front({}); // push_front is used to add to dhe front O(1)
-    // while(node != nullptr){
-    //     boards.push_back(node->board);
-    //     node = node->previous;
-    // }
-    std::reverse(boards.begin(), boards.end());
-    return boards;
+std::list<Board> Solver::makeHistory(SearchNode* node) {
+  std::list<Board> boards;
+  // boards.push_front({}); // push_front is used to add to dhe front O(1)
+  // while(node != nullptr){
+  //     boards.push_back(node->board);
+  //     node = node->previous;
+  // }
+  // std::reverse(boards.begin(), boards.end());
+  return boards;
 }
