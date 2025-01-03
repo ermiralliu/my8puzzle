@@ -1,54 +1,53 @@
 #include "SolverService.hpp"
 #include <unordered_set>
-#include <deque>
-#include <algorithm>
+#include <stack>
 
 // ... (Board, BoardSave, SearchNode class declarations as before)
 using Tiles = Models::Tiles<N>;
 
 // std::hash is stateless, so no thread-related problems if you use it on more than one thread
-constexpr std::hash<uint64_t> tileHasher{};
+constexpr std::hash<std::uint64_t> tileHasher{};
 
 std::list<Board> Solver::solution() {
   constexpr auto hashingFunction = [](Tiles tiles) {  // this should be done with an if constexpr for row_sizes other than 4
     return tileHasher(tiles.toLong());
   };
   std::unordered_set<Tiles, decltype(hashingFunction)> finished;
-  std::deque<SearchNode> queue; // I'm using this as a stack, but i wanted to avoid huge reallocations and copyings
-  // since this one is made of many arrays instead
+  std::stack<SearchNode> queue;
   int id = 0;
-  queue.emplace_back(SearchNode{-1,id++,initial});
+  queue.push(SearchNode{-1,id++,initial,0});
 
   SearchNode* finalNode = nullptr;
   int boxNumber = 0;
 
   while (!queue.empty()) {
-    std::deque<SearchNode> nextBox;
+    std::stack<SearchNode> nextBox;
     while (!queue.empty()) {
-      SearchNode currentNode = queue.back();
-      queue.pop_back();
-      std::cout<< moves++<<"\n";
+      SearchNode currentNode = queue.top();
+      queue.pop();
+      // std::cout<< moves++<<"\n";
 
       finished.insert(currentNode.board.getTiles());
 
       if (currentNode.board.isGoal()) {
         finalNode = &currentNode;
-        std::cout<< "Queue size: "<< queue.size()<< "Set size: " << finished.size()<< "\n";
+        moves = currentNode.moves;
+        std::cout<< "Queue size: "<< queue.size()<< ", Set size: " << finished.size()<< "\n";
         return makeHistory(finalNode);
       } else {
-        std::cout<< "Entered within the else \n";
+        // std::cout<< "Entered within the else \n";
         for (auto neighbor : currentNode.board.neighbors()) {
-          std::cout<< "Entered within the neighbor \n";
+          // std::cout<< "Entered within the neighbor \n";
           Board board = neighbor.board;
           bool isNextBox = neighbor.isNextBox;
           if (finished.count(board.getTiles())) {
             continue;
           }
-          SearchNode nextSearchNode{currentNode.id, id++, board};
+          SearchNode nextSearchNode{currentNode.id, id++, board, currentNode.moves+1};
           if (isNextBox)
-            nextBox.emplace_back(nextSearchNode);
+            nextBox.push(nextSearchNode);
           else
-            queue.emplace_back(nextSearchNode);
+            queue.push(nextSearchNode);
         }
       }
     }

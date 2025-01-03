@@ -1,11 +1,10 @@
 #ifndef BOARD_HPP
 #define BOARD_HPP
-#include <functional> // For hash
 #include <string> // std::string
 #include <array>
+
 #include "Board_head.hpp"
 #include "Tiles.hpp"
-
 #include "../structures/PreAllocatedStack.hpp"
 
 // compiled using wall
@@ -15,40 +14,36 @@ namespace Models{
   using byte = unsigned char;
   using std::size_t;
 
-template <uint N> struct BoardDtos{
+template <size_t N> struct BoardDtos{
   Board<N> board;
   bool isNextBox;
 };
 
-template <uint N>
+template <size_t N>
 using Neighbors = structures::prealloc_stack<4, BoardDtos<N>>;
 
-template <uint N> constexpr
+template <size_t N> constexpr
 Tiles<N> generate_final_array(){
-  uint SIZE = N*N;
+  size_t SIZE = N*N;
   std::array<byte,N*N> initializer;
-  for(uint i=1; i<SIZE; i++){
+  for(size_t i=1; i<SIZE; i++){
     initializer[i-1] = static_cast<byte>(i);
   }
   initializer[SIZE-1] = 0;
   return Tiles<N>{initializer};
 };
 
-template <> constexpr Tiles<4> generate_final_array<4>(){
-  return Tiles<4>{ std::array<byte,8>{0xf0, 0xed, 0xcb, 0xa9, 0x87, 0x65, 0x43, 0x21 }};  // these are numbers 1-15 then 0 squished in a single long
-}
-
-template <uint N> class Board{ 
+template <size_t N> class Board{ 
   // private:
   //   static constexpr std::hash<std::string> hasher {};
-    // static constexpr uint N_uns = static_cast<uint> N;
+    // static constexpr size_t N_uns = static_cast<size_t> N;
   public:
-    static constexpr uint SIZE = N*N;
+    static constexpr size_t SIZE = N*N;
     static constexpr Tiles<N> FINAL = generate_final_array<N>();
   
   private:  
     Tiles<N> tiles;
-    uint emptyIndex;
+    std::uint32_t emptyIndex;
 
   public:
     inline int getEmptyIndex() const{
@@ -62,7 +57,7 @@ template <uint N> class Board{
   Board() = default;  // this should never be actually used by anyone, but i need it for copy and move semantics
   // just to be able to allocate space without playing games and whatnot
 
-  Board(Tiles<N> tiles, uint emptyIndex) :
+  Board(Tiles<N> tiles, std::uint32_t emptyIndex) :
     tiles{ tiles },
     emptyIndex{ emptyIndex }
   { }
@@ -85,9 +80,9 @@ template <uint N> class Board{
 
   Neighbors<N> neighbors();
   
-  BoardDtos<N> makeNeighbor(uint newEmpty) const;
+  BoardDtos<N> makeNeighbor(std::uint32_t newEmpty) const;
   
-  static int oneManhattan(Tiles<N> tiles, uint newIndex);
+  static int oneManhattan(Tiles<N> tiles, std::uint32_t newIndex);
 
   bool isSolvable() const;
   bool isSolvableOdd() const;
@@ -108,14 +103,8 @@ template <uint N> class Board{
   }
   // we have manhattan here, but let's just implement the comparison in the searchNode;
 };
-
-// template class Board<2>;
-// template class Board<3>;  
-// leaving only 3 so we don't generate duplicate compiling problems for now
-template class Board<4>;
-// template class Board<10>;
-
-
 }
+
+#include "Board.tpp"
 
 #endif

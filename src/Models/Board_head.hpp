@@ -1,8 +1,12 @@
-#include <cstdlib>
+#ifndef BOARD_HEAD_HPP
+#define BOARD_HEAD_HPP
 
+#include <cstddef>
 // just a forward declaration which is needed for PreAllocatedStack
 
 namespace Models{
-  template <uint N> class Board;
-  template <uint N> struct BoardDtos;
+  template <std::size_t N> class Board;
+  template <std::size_t N> struct BoardDtos;
 }
+
+#endif

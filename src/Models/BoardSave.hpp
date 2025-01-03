@@ -1,8 +1,9 @@
+#include <cstdint>
 #include <array>
 
 namespace Models {
 
-template <int N> // N is rowsize
+template <std::size_t N> // N is rowsize
 struct BoardSave {
   using byte =  unsigned char;
   private:

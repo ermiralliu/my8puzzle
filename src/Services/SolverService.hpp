@@ -14,9 +14,9 @@ using SearchNode = Models::SearchNode<N>;
 class Solver {
 private:
   Board initial;
-  uint moves;
+  std::uint32_t moves;
 public:
-  uint getMoves() const{
+  std::uint32_t getMoves() const{
     return moves;
   }
   Solver(const Board& initial) : initial(initial) {}

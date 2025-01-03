@@ -1,8 +1,8 @@
 #ifndef TILES_HPP
 #define TILES_HPP
 
-#include <iostream>
-#include <cstdint> // For uint64_t
+#include <cstdint> // For std::uint
+#include <cstddef>
 #include <cstring> // For memcpy
 #include <array>
 
@@ -15,14 +15,19 @@
 namespace Models {
 using byte = unsigned char;
 
-template <uint N>
+template <std::size_t N>
 struct Tiles {
 private:
   std::array<byte, N* N> pattern;
 public:
   constexpr Tiles(std::array<byte, N* N> initialValue) : pattern{ initialValue } {}
 
-  static Tiles makeNext(Tiles initial, byte emptyIndex, byte newEmpty);
+  static Tiles makeNext(Tiles initial, byte emptyIndex, byte newEmpty){
+    Tiles next{initial};
+    next.pattern[emptyIndex] = next.pattern[newEmpty];  // futim nr e ri ne pozicionin bosh
+    next.pattern[newEmpty] = 0; // levizim pozicionin bosh
+    return next;
+  }
 
   inline std::array<byte, N* N> getValue() const {
     return pattern;
@@ -55,18 +60,18 @@ private:
   std::array<byte,8> pattern;
 
 public:
-  Tiles() = default;
+  constexpr Tiles() = default;
 
-  constexpr Tiles(std::array<byte,8> initialValue) : pattern{ initialValue } {} // I didn't know c++ had default values
+  constexpr Tiles(std::array<byte,8> initialValue) : pattern{ initialValue } {}
   // I really made a constexpr constructor
   // crazy
-  Tiles(std::array<byte, 16> initialTiles) {
-    // std::cout << "right constructor called\n";
-    Tiles patt{};
+  constexpr Tiles(std::array<byte, 16> initialTiles) {
+  // std::cout << "right constructor called\n";
+    Tiles<4> patt{};
     for (int i = 0; i< 16;i++)
       patt.set(i, initialTiles[i]);
     this->pattern = patt.pattern;
-  }
+  };
 
   static Tiles makeNext(Tiles initial, byte emptyIndex, byte newEmpty) {
     Tiles next{ initial };
@@ -80,18 +85,18 @@ public:
   }
   // private:
 
-  inline void set(int index, byte nibbleValue) {
+  constexpr inline void set(int index, byte nibbleValue) {
     size_t byteIndex = index / 2;
     size_t nibbleInByte = index % 2;
-    uint8_t mask = 0x0F << (nibbleInByte * 4);
+    std::size_t mask = 0x0F << (nibbleInByte * 4);
     pattern[byteIndex] = (pattern[byteIndex] & ~mask) | (nibbleValue << (nibbleInByte * 4));
-  }
+  };
 
-  inline byte get(int index) const {
+  constexpr inline byte get(int index) const {
     size_t byteIndex = index / 2;
     size_t nibbleInByte = index % 2;
     return (pattern[byteIndex] >> (nibbleInByte * 4)) & 0x0F;
-  }
+  };
 
   inline bool operator==(Tiles other) const {
     return this->pattern == other.pattern;
@@ -105,13 +110,17 @@ public:
     return this->pattern == other.pattern;
   }
 
-  uint64_t toLong(){  // this will be how this particular Tile pattern in save in the database
-    uint64_t result;
+  std::uint64_t toLong(){  // this will be how this particular Tile pattern in save in the database
+    std::uint64_t result;
     std::memcpy(&result, pattern.data(), sizeof(result));
     return result;
   } 
-
 };
+
+// This has been a terrible day for my eyes, and separation of declarations and definitions
+
 // hbl.setNibble(0, 0xA); // Set the least significant nibble to 10 (0xA)
 }
+
+
 #endif

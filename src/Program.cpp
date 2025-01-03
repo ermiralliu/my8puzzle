@@ -1,8 +1,5 @@
 ﻿#include <iostream>
 #include <fstream>
-// #include <ostream>
-#include <iterator>
-#include <vector>
 #include <string>
 #include <chrono>
 #include <stdexcept> // For exceptions like std::invalid_argument
@@ -11,16 +8,16 @@
 
 // in the end i set the bottom two within solver service
 // bad design but whatever
-// constexpr uint ROW_SIZE = 4;
-// constexpr uint SIZE = ROW_SIZE*ROW_SIZE;
+// constexpr std::size_t ROW_SIZE = 4;
+// constexpr std::size_t SIZE = ROW_SIZE*ROW_SIZE;
 
 using byte = unsigned char;
 
 
-template <uint N>
+template <std::size_t N>
 void print_array(const std::array<byte, N*N>& arr) {
   std::cout << "[";
-  for (uint i = 0; i < arr.size(); ++i) {
+  for (std::size_t i = 0; i < arr.size(); ++i) {
     std::cout << static_cast<int>(arr[i]); // Print as int (decimal)
     if (i < arr.size() - 1) {
       std::cout << ", ";
@@ -47,7 +44,7 @@ int main(int argc, char* argv[]) {
         throw std::runtime_error("Could not open file: " + filename);
       }
       inputFile >> n;
-      std::cout << static_cast<int>(n) + "\n";
+      std::cout << static_cast<int>(n) << "\n";
       if (n <= 0) {
         throw std::invalid_argument("Invalid board size n");
       }
@@ -58,7 +55,6 @@ int main(int argc, char* argv[]) {
         if (tileValue < 0 || tileValue > 255) {
           throw std::invalid_argument("Tile value out of range");
         }
-        std::cout << static_cast<int>(tileValue) + " ";
         tiles[j] = static_cast<unsigned char>(tileValue);
       }
       inputFile.close();
@@ -68,8 +64,8 @@ int main(int argc, char* argv[]) {
     }
 
     // Solve the slider puzzle
-    auto initial = Board::make_init_board(tiles);
     print_array<N>(tiles);  // N is defined in SolverService.hpp
+    auto initial = Board::make_init_board(tiles);
     if (!initial.isSolvable()) {
       std::cout << "No solution possible\n" << std::endl;
     } else {
