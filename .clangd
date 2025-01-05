@@ -1,0 +1,6 @@
+CompileFlags:
+  Add:
+    - --target=x86_64-w64-mingw32 # Or i686-w64-mingw32 for 32-bit
+    - -IC:/mingw64/include
+    - -IC:/mingw64/include/c++/14.1.0
+    - -IC:/mingw64/include/c++/14.1.0/**/*

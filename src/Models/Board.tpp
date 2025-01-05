@@ -8,7 +8,7 @@
 namespace Models{
 
 template <std::size_t N>  
-Neighbors<N> Board<N>::neighbors(){
+Neighbors<N> Board<N>::neighbors() const{
   structures::empty_indexes sides {};
   std::size_t empty_row = emptyIndex / N;
   std::size_t empty_column = emptyIndex % N;
@@ -27,6 +27,29 @@ Neighbors<N> Board<N>::neighbors(){
   }
   return neighbors;
 };
+
+template <std::size_t N>  
+Neighbors<N> Board<N>::neighborsBackwards() const{
+  structures::empty_indexes sides {};
+  std::size_t empty_row = emptyIndex / N;
+  std::size_t empty_column = emptyIndex % N;
+  if (empty_column > 0)  // left
+    sides.push(emptyIndex - 1);
+  if (empty_column < N - 1) // right
+    sides.push(emptyIndex + 1);
+  if (empty_row > 0) // up
+    sides.push(emptyIndex - N);
+  if (empty_row < N - 1) // down
+    sides.push(emptyIndex + N);
+  // loop
+  Neighbors<N> neighbors {};
+  for(const auto& newEmpty : sides) {
+    neighbors.push(makeNeighborBackwards(newEmpty));
+  }
+  return neighbors;
+};
+
+
 
 template <std::size_t N>
 bool Board<N>::isSolvable() const{
@@ -74,11 +97,35 @@ BoardDtos<N> Board<N>::makeNeighbor(std::uint32_t newEmpty) const { //returns a 
 }
 
 template <std::size_t N>
+BoardDtos<N> Board<N>::makeNeighborBackwards(std::uint32_t newEmpty) const{
+  int manhattan_first = oneManhattanBackwards(tiles, newEmpty);
+
+  Tiles<N> next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
+  
+  int manhattan_second = oneManhattanBackwards(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
+  bool next_box = manhattan_second - manhattan_first > 0;
+  
+  return { 
+    Board {
+      next_tiles,
+      newEmpty
+    }, 
+    next_box
+  };
+};
+
+template <std::size_t N>
 Board<N> Board<N>::make_init_board(std::array<byte, Board<N>::SIZE> tiles){ // O(n^2)
   std::uint32_t emptyIndex;
-  for(std::uint32_t i=0; i< Board<N>::SIZE; ++i)
-    if(tiles[i] == 0)
+  for(std::uint32_t i=0; i< Board<N>::SIZE; ++i){
+    if(tiles[i] == 0){
       emptyIndex = i;
+    } else{
+      final_to_initial.insert(tiles[i],i);
+    }
+  }
+    
+  
   // std::cout<< emptyIndex<<"\n"; // this is what printed me a 5
   return Board{ Tiles<N>{tiles}, emptyIndex};
 };
@@ -89,6 +136,19 @@ int Board<N>::oneManhattan(const Tiles<N>& tiles, std::uint32_t newIndex){ // O(
   int j = newIndex % N;
   std::size_t current = tiles.get(newIndex);
   std::size_t index = current - 1;
+  int needed_row = index / N;
+  int needed_column = index % N;
+  int distance = std::abs(needed_row - i) + std::abs(needed_column - j);
+  return distance;
+}
+
+template <std::size_t N>
+int Board<N>::oneManhattanBackwards(const Tiles<N>& tiles, std::uint32_t newIndex){
+  int i = newIndex / N;
+  int j = newIndex % N;
+  std::size_t currentValue = tiles.get(newIndex);
+  // std::size_t index = current - 1;
+  std::size_t index = final_to_initial.at(currentValue);
   int needed_row = index / N;
   int needed_column = index % N;
   int distance = std::abs(needed_row - i) + std::abs(needed_column - j);

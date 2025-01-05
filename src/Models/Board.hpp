@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Board_head.hpp"
 #include "Tiles.hpp"
+#include <unordered_map>
 #include "../structures/PreAllocatedStack.hpp"
 
 // compiled using wall
@@ -54,6 +55,7 @@ template <size_t N> class Board{
     // static constexpr size_t N_uns = static_cast<size_t> N;
   public:
     static constexpr size_t SIZE = N*N;
+    static std::unordered_map<int, int> final_to_initial;
     static constexpr Tiles<N> FINAL = generate_final_array<N>();
   
   private:  
@@ -78,6 +80,10 @@ template <size_t N> class Board{
   { }
   
   static Board<N> make_init_board(std::array<byte, SIZE> tiles); // O(SIZE) //Only used once
+
+  static Board<N> make_init_backwards(){
+    return Board<N>{FINAL, SIZE-1};
+  }
   
   inline std::string toString() const {
     return toString(tiles);
@@ -93,11 +99,15 @@ template <size_t N> class Board{
 
   static std::string toString(const Tiles<N>& tiles);
 
-  Neighbors<N> neighbors();
+  Neighbors<N> neighbors() const;
+  Neighbors<N> neighborsBackwards() const;  // there should be a cleaner way to write this stuff without using copy paste
   
   BoardDtos<N> makeNeighbor(std::uint32_t newEmpty) const;
+  BoardDtos<N> makeNeighborBackwards(std::uint32_t newEmpty) const;
   
   static int oneManhattan(const Tiles<N>& tiles, std::uint32_t newIndex);
+
+  static int oneManhattanBackwards(const Tiles<N>& tiles, std::uint32_t newIndex);
 
   bool isSolvable() const;
   bool isSolvableOdd() const;
