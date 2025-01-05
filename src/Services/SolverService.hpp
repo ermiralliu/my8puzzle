@@ -4,6 +4,7 @@
 #include "../Models/Board.hpp"
 #include "../Models/SearchNode.hpp"
 #include <list>
+#include <memory>
 
 // This is where the size is set
 constexpr int N = 4;
@@ -22,6 +23,6 @@ public:
   Solver(const Board& initial) : initial(initial) {}
   std::list<Board> solution();
 private:
-  std::list<Board> makeHistory(SearchNode* node);
+  std::list<Board> makeHistory(std::shared_ptr<SearchNode> node);
 };
 #endif

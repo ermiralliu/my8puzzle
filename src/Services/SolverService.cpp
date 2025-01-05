@@ -1,5 +1,6 @@
 #include "SolverService.hpp"
 #include <cstddef>
+#include <memory>
 #include <unordered_set>
 #include <stack>
 
@@ -20,41 +21,40 @@ using BoardMap = std::unordered_set<Tiles, BoardHash>;
 std::list<Board> Solver::solution() {
 
   BoardMap finished{};
-  std::stack<SearchNode> queue{};
-  int id = 0;
-  queue.push(SearchNode{-1,id++,initial,0});
+  std::stack<std::shared_ptr<SearchNode>> queue{};
+  // int id = 0;
+  queue.push(std::make_shared<SearchNode>(nullptr, initial));
 
-  SearchNode* finalNode = nullptr;
-  int boxNumber = 0;
+  std::shared_ptr<SearchNode> finalNode = nullptr;
 
   while (!queue.empty()) {
-    std::stack<SearchNode> nextBox;
+    std::stack<std::shared_ptr<SearchNode>> nextBox;
     while (!queue.empty()) {
-      SearchNode currentNode = queue.top();
+      std::shared_ptr<SearchNode> currentNode = queue.top();
       queue.pop();
       // std::cout<< moves++<<"\n";
 
-      finished.insert(currentNode.board.getTiles());
+      finished.insert(currentNode->board.getTiles());
 
-      if (currentNode.board.isGoal()) {
-        finalNode = &currentNode;
-        moves = currentNode.moves;
+      if (currentNode->board.isGoal()) {
+        finalNode = currentNode;
+        // moves = currentNode->moves;
         std::cout<< "Queue size: "<< queue.size()<< ", Set size: " << finished.size()<< "\n";
         std::cout<< "Next box: " << nextBox.size() << "\n";
-        std::stack<SearchNode>{}.swap(queue);
-        std::stack<SearchNode>{}.swap(nextBox);
+        std::stack<std::shared_ptr<SearchNode>>{}.swap(queue);
+        std::stack<std::shared_ptr<SearchNode>>{}.swap(nextBox);
         BoardMap{}.swap(finished);
         return makeHistory(finalNode);
       } else {
         // std::cout<< "Entered within the else \n";
-        for (auto neighbor : currentNode.board.neighbors()) {
+        for (auto neighbor : currentNode->board.neighbors()) {
           // std::cout<< "Entered within the neighbor \n";
           Board board = neighbor.board;
           bool isNextBox = neighbor.isNextBox;
           if (finished.count(board.getTiles())) {
             continue;
           }
-          SearchNode nextSearchNode{currentNode.id, id++, board, currentNode.moves+1};
+          auto nextSearchNode = std::make_shared<SearchNode>(currentNode, board);
           if (isNextBox)
             nextBox.push(nextSearchNode);
           else
@@ -63,20 +63,19 @@ std::list<Board> Solver::solution() {
       }
     }
     if (!nextBox.empty()) {
-      boxNumber++;
       queue = std::move(nextBox); // Move the contents of nextBox to queue
     }
   }
   return std::list<Board>();
 }
 
-std::list<Board> Solver::makeHistory(SearchNode* node) {
+std::list<Board> Solver::makeHistory(std::shared_ptr<SearchNode> node) {
   std::list<Board> boards;
-  // boards.push_front({}); // push_front is used to add to dhe front O(1)
-  // while(node != nullptr){
-  //     boards.push_back(node->board);
-  //     node = node->previous;
-  // }
-  // std::reverse(boards.begin(), boards.end());
+  while(node != nullptr){
+    boards.push_front(node->board);
+    node = node->parent;
+  }
+  moves = boards.size()-1;
+  std::cout<< "Final list size: "<<boards.size()<<"\n";
   return boards;
 }

@@ -9,19 +9,22 @@
 
 namespace Models{
 
+template <std::size_t N>
+std::unordered_map<uint32_t, uint32_t> Board<N>::final_to_initial;
+
 template <std::size_t N, bool backwards>
 BoardDtos<N> makeNeighborIntermediate(const Tiles<N>& tiles, std::uint32_t emptyIndex, std::uint32_t newEmpty){
   int manhattan_first;
   int manhattan_second;
   Tiles<N> next_tiles;
   if constexpr(backwards){
-    manhattan_first = oneManhattanBackwards(tiles, newEmpty);
+    manhattan_first = Board<N>::oneManhattanBackwards(tiles, newEmpty);
     next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
-    manhattan_second = oneManhattanBackwards(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
+    manhattan_second = Board<N>::oneManhattanBackwards(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
   }else{
-    manhattan_first = oneManhattan(tiles, newEmpty);
+    manhattan_first = Board<N>::oneManhattan(tiles, newEmpty);
     next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
-    manhattan_second = oneManhattan(next_tiles, emptyIndex);
+    manhattan_second = Board<N>::oneManhattan(next_tiles, emptyIndex);
   }
   bool next_box = manhattan_second - manhattan_first > 0;
   return { 
@@ -34,7 +37,7 @@ BoardDtos<N> makeNeighborIntermediate(const Tiles<N>& tiles, std::uint32_t empty
 };
 
 template <std::size_t N, bool backwards>
-inline Neighbors<N> neighborsItermediate(const Tiles<N>& tiles, std::uint32_t emptyIndex){
+inline Neighbors<N> neighborsIntermediate(const Tiles<N>& tiles, std::uint32_t emptyIndex){
   structures::empty_indexes sides {};
   std::size_t empty_row = emptyIndex / N;
   std::size_t empty_column = emptyIndex % N;
@@ -108,12 +111,12 @@ inline BoardDtos<N> Board<N>::makeNeighborBackwards(std::uint32_t newEmpty) cons
 
 template <std::size_t N>
 Board<N> Board<N>::make_init_board(std::array<byte, Board<N>::SIZE> tiles){ // O(n^2)
-  std::uint32_t emptyIndex;
+  std::uint32_t emptyIndex = -1;
   for(std::uint32_t i=0; i< Board<N>::SIZE; ++i){
     if(tiles[i] == 0){
       emptyIndex = i;
     } else{
-      final_to_initial.insert(tiles[i],i);
+      Board<N>::final_to_initial[tiles[i]] = i;
     }
   }
   // std::cout<< emptyIndex<<"\n"; // this is what printed me a 5

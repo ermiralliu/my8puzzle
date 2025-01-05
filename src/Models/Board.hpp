@@ -50,7 +50,7 @@ template <size_t N> class Board{
     // static constexpr size_t N_uns = static_cast<size_t> N;
   public:
     static constexpr size_t SIZE = N*N;
-    static std::unordered_map<int, int> final_to_initial;
+    static std::unordered_map<uint32_t, uint32_t> final_to_initial;
     static constexpr Tiles<N> FINAL = generate_final_array<N>();
   
   private:  
@@ -58,13 +58,14 @@ template <size_t N> class Board{
     std::uint32_t emptyIndex;
 
   public:
-    inline int getEmptyIndex() const{
-      return emptyIndex;
-    }
 
-    inline Tiles<N> getTiles() const{
-      return tiles;
-    }
+  inline int getEmptyIndex() const{
+    return emptyIndex;
+  }
+
+  inline Tiles<N> getTiles() const{
+    return tiles;
+  }
   
   Board() = default;  // this should never be actually used by anyone, but i need it for copy and move semantics
   // just to be able to allocate space without playing games and whatnot
@@ -83,10 +84,6 @@ template <size_t N> class Board{
   inline std::string toString() const {
     return toString(tiles);
   }
-  
-  // inline size_t getHash() const{
-  //   return hasher(std::string{this->tiles.begin(), this->tiles.end()});
-  // }
 
   inline bool isGoal() const{
     return tiles == Board<N>::FINAL;
