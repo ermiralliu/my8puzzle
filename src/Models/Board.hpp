@@ -9,15 +9,9 @@
 #include <unordered_map>
 #include "../structures/PreAllocatedStack.hpp"
 
-// compiled using wall
-// it's all
-
-
 
 namespace Models{
   using byte = unsigned char;
-  using std::size_t;
-
 
 template <std::size_t N>
 void print_array(const std::array<byte, N*N>& arr) {
@@ -100,8 +94,8 @@ template <size_t N> class Board{
 
   static std::string toString(const Tiles<N>& tiles);
 
-  Neighbors<N> neighbors() const;
-  Neighbors<N> neighborsBackwards() const;  // there should be a cleaner way to write this stuff without using copy paste
+  inline Neighbors<N> neighbors() const;
+  inline Neighbors<N> neighborsBackwards() const;  // there should be a cleaner way to write this stuff without using copy paste
   
   inline BoardDtos<N> makeNeighbor(std::uint32_t newEmpty) const;
   inline BoardDtos<N> makeNeighborBackwards(std::uint32_t newEmpty) const;

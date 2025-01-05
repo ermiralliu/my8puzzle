@@ -9,8 +9,32 @@
 
 namespace Models{
 
-template <std::size_t N>  
-Neighbors<N> Board<N>::neighbors() const{
+template <std::size_t N, bool backwards>
+BoardDtos<N> makeNeighborIntermediate(const Tiles<N>& tiles, std::uint32_t emptyIndex, std::uint32_t newEmpty){
+  int manhattan_first;
+  int manhattan_second;
+  Tiles<N> next_tiles;
+  if constexpr(backwards){
+    manhattan_first = oneManhattanBackwards(tiles, newEmpty);
+    next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
+    manhattan_second = oneManhattanBackwards(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
+  }else{
+    manhattan_first = oneManhattan(tiles, newEmpty);
+    next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
+    manhattan_second = oneManhattan(next_tiles, emptyIndex);
+  }
+  bool next_box = manhattan_second - manhattan_first > 0;
+  return { 
+    Board {
+      next_tiles,
+      newEmpty
+    }, 
+    next_box
+  };
+};
+
+template <std::size_t N, bool backwards>
+inline Neighbors<N> neighborsItermediate(const Tiles<N>& tiles, std::uint32_t emptyIndex){
   structures::empty_indexes sides {};
   std::size_t empty_row = emptyIndex / N;
   std::size_t empty_column = emptyIndex % N;
@@ -24,34 +48,27 @@ Neighbors<N> Board<N>::neighbors() const{
     sides.push(emptyIndex + N);
   // loop
   Neighbors<N> neighbors {};
-  for(const auto& newEmpty : sides) {
-    neighbors.push(makeNeighbor(newEmpty));
+  if constexpr( backwards){
+    for(const auto& newEmpty : sides) {
+      neighbors.push(makeNeighborIntermediate<N, true>(tiles, emptyIndex, newEmpty));
+    }
+  }else{
+    for(const auto& newEmpty : sides) {
+      neighbors.push(makeNeighborIntermediate<N, false>(tiles, emptyIndex, newEmpty));
+    }
   }
   return neighbors;
+}
+
+template <std::size_t N>  
+inline Neighbors<N> Board<N>::neighbors() const{
+  return neighborsIntermediate<N, false>(tiles, emptyIndex);
 };
 
 template <std::size_t N>  
-Neighbors<N> Board<N>::neighborsBackwards() const{
-  structures::empty_indexes sides {};
-  std::size_t empty_row = emptyIndex / N;
-  std::size_t empty_column = emptyIndex % N;
-  if (empty_column > 0)  // left
-    sides.push(emptyIndex - 1);
-  if (empty_column < N - 1) // right
-    sides.push(emptyIndex + 1);
-  if (empty_row > 0) // up
-    sides.push(emptyIndex - N);
-  if (empty_row < N - 1) // down
-    sides.push(emptyIndex + N);
-  // loop
-  Neighbors<N> neighbors {};
-  for(const auto& newEmpty : sides) {
-    neighbors.push(makeNeighborBackwards(newEmpty));
-  }
-  return neighbors;
+inline Neighbors<N> Board<N>::neighborsBackwards() const{
+  return neighborsIntermediate<N, true>(tiles, emptyIndex);
 };
-
-
 
 template <std::size_t N>
 bool Board<N>::isSolvable() const{
@@ -77,30 +94,6 @@ std::string Board<N>::toString(const Tiles<N>& tiles){
   }
   return str;
 }
-
-template <std::size_t N, bool backwards>
-BoardDtos<N> makeNeighborIntermediate(const Tiles<N>& tiles, std::uint32_t emptyIndex, std::uint32_t newEmpty){
-  int manhattan_first;
-  int manhattan_second;
-  Tiles<N> next_tiles;
-  if constexpr(backwards){
-    manhattan_first = oneManhattanBackwards(tiles, newEmpty);
-    next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
-    manhattan_second = oneManhattanBackwards(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
-  }else{
-    manhattan_first = oneManhattan(tiles, newEmpty);
-    next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
-    manhattan_second = oneManhattan(next_tiles, emptyIndex);
-  }
-  bool next_box = manhattan_second - manhattan_first > 0;
-  return { 
-    Board {
-      next_tiles,
-      newEmpty
-    }, 
-    next_box
-  };
-};
 
 template <std::size_t N>
 inline BoardDtos<N> Board<N>::makeNeighbor(std::uint32_t newEmpty) const { //returns a new board + a bool which is true if it needs
