@@ -1,7 +1,6 @@
 #ifndef TILES_HPP
 #define TILES_HPP
 
-#include <cstdint> // For std::uint
 #include <cstddef>
 #include <cstring> // For memcpy
 #include <array>

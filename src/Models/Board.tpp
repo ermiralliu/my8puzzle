@@ -2,6 +2,8 @@
 // the include down below generated the problem which i ignored in my .clangd
 // I checked the directory tree and it was all fine though 
 #include "Board.hpp"
+#include "Tiles.hpp"
+#include <cstddef>
 
 // actually managed to compile this successfully using -Wall
 
@@ -76,17 +78,21 @@ std::string Board<N>::toString(const Tiles<N>& tiles){
   return str;
 }
 
-template <std::size_t N>
-BoardDtos<N> Board<N>::makeNeighbor(std::uint32_t newEmpty) const { //returns a new board + a bool which is true if it needs
-// to go to the next box
-  
-  int manhattan_first = oneManhattan(tiles, newEmpty);
-
-  Tiles<N> next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
-  
-  int manhattan_second = oneManhattan(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
+template <std::size_t N, bool backwards>
+BoardDtos<N> makeNeighborIntermediate(const Tiles<N>& tiles, std::uint32_t emptyIndex, std::uint32_t newEmpty){
+  int manhattan_first;
+  int manhattan_second;
+  Tiles<N> next_tiles;
+  if constexpr(backwards){
+    manhattan_first = oneManhattanBackwards(tiles, newEmpty);
+    next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
+    manhattan_second = oneManhattanBackwards(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
+  }else{
+    manhattan_first = oneManhattan(tiles, newEmpty);
+    next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
+    manhattan_second = oneManhattan(next_tiles, emptyIndex);
+  }
   bool next_box = manhattan_second - manhattan_first > 0;
-  
   return { 
     Board {
       next_tiles,
@@ -94,24 +100,17 @@ BoardDtos<N> Board<N>::makeNeighbor(std::uint32_t newEmpty) const { //returns a 
     }, 
     next_box
   };
+};
+
+template <std::size_t N>
+inline BoardDtos<N> Board<N>::makeNeighbor(std::uint32_t newEmpty) const { //returns a new board + a bool which is true if it needs
+// to go to the next box
+  return makeNeighborIntermediate<N, false>(tiles, emptyIndex, newEmpty);
 }
 
 template <std::size_t N>
-BoardDtos<N> Board<N>::makeNeighborBackwards(std::uint32_t newEmpty) const{
-  int manhattan_first = oneManhattanBackwards(tiles, newEmpty);
-
-  Tiles<N> next_tiles = Tiles<N>::makeNext(tiles, emptyIndex, newEmpty);
-  
-  int manhattan_second = oneManhattanBackwards(next_tiles, emptyIndex); // manhattan tani qe kemi bere swap-in
-  bool next_box = manhattan_second - manhattan_first > 0;
-  
-  return { 
-    Board {
-      next_tiles,
-      newEmpty
-    }, 
-    next_box
-  };
+inline BoardDtos<N> Board<N>::makeNeighborBackwards(std::uint32_t newEmpty) const{
+  return makeNeighborIntermediate<N, true>(tiles, emptyIndex, newEmpty);
 };
 
 template <std::size_t N>
@@ -124,18 +123,22 @@ Board<N> Board<N>::make_init_board(std::array<byte, Board<N>::SIZE> tiles){ // O
       final_to_initial.insert(tiles[i],i);
     }
   }
-    
-  
   // std::cout<< emptyIndex<<"\n"; // this is what printed me a 5
   return Board{ Tiles<N>{tiles}, emptyIndex};
 };
 
-template <std::size_t N>
-int Board<N>::oneManhattan(const Tiles<N>& tiles, std::uint32_t newIndex){ // O(1), kursejme shume kohe per femijet
+template <std::size_t N, bool backwards>  // I made this even if just a bit, cleaner imo
+int oneManhattanIntermediate(const Tiles<N>& tiles, std::uint32_t newIndex){
   int i = newIndex / N;
   int j = newIndex % N;
-  std::size_t current = tiles.get(newIndex);
-  std::size_t index = current - 1;
+  std::size_t index;
+  if constexpr(backwards){
+    std::size_t currentValue = tiles.get(newIndex);
+    index = Board<N>::final_to_initial.at(currentValue);
+  } else{
+    std::size_t current = tiles.get(newIndex);
+    index = current - 1;
+  }
   int needed_row = index / N;
   int needed_column = index % N;
   int distance = std::abs(needed_row - i) + std::abs(needed_column - j);
@@ -143,16 +146,13 @@ int Board<N>::oneManhattan(const Tiles<N>& tiles, std::uint32_t newIndex){ // O(
 }
 
 template <std::size_t N>
-int Board<N>::oneManhattanBackwards(const Tiles<N>& tiles, std::uint32_t newIndex){
-  int i = newIndex / N;
-  int j = newIndex % N;
-  std::size_t currentValue = tiles.get(newIndex);
-  // std::size_t index = current - 1;
-  std::size_t index = final_to_initial.at(currentValue);
-  int needed_row = index / N;
-  int needed_column = index % N;
-  int distance = std::abs(needed_row - i) + std::abs(needed_column - j);
-  return distance;
+inline int Board<N>::oneManhattan(const Tiles<N>& tiles, std::uint32_t newIndex){ // O(1), kursejme shume kohe per femijet
+  return oneManhattanIntermediate<N, false>(tiles, newIndex);
+}
+
+template <std::size_t N>
+inline int Board<N>::oneManhattanBackwards(const Tiles<N>& tiles, std::uint32_t newIndex){
+  return oneManhattanIntermediate<N, true>(tiles, newIndex);
 }
 
 template <std::size_t N>

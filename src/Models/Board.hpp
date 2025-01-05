@@ -2,6 +2,7 @@
 #define BOARD_HPP
 #include <string> // std::string
 #include <array>
+#include <cstdint>
 #include <iostream>
 #include "Board_head.hpp"
 #include "Tiles.hpp"
@@ -102,12 +103,12 @@ template <size_t N> class Board{
   Neighbors<N> neighbors() const;
   Neighbors<N> neighborsBackwards() const;  // there should be a cleaner way to write this stuff without using copy paste
   
-  BoardDtos<N> makeNeighbor(std::uint32_t newEmpty) const;
-  BoardDtos<N> makeNeighborBackwards(std::uint32_t newEmpty) const;
+  inline BoardDtos<N> makeNeighbor(std::uint32_t newEmpty) const;
+  inline BoardDtos<N> makeNeighborBackwards(std::uint32_t newEmpty) const;
   
-  static int oneManhattan(const Tiles<N>& tiles, std::uint32_t newIndex);
+  static inline int oneManhattan(const Tiles<N>& tiles, std::uint32_t newIndex);
 
-  static int oneManhattanBackwards(const Tiles<N>& tiles, std::uint32_t newIndex);
+  static inline int oneManhattanBackwards(const Tiles<N>& tiles, std::uint32_t newIndex);
 
   bool isSolvable() const;
   bool isSolvableOdd() const;
