@@ -1,64 +1,73 @@
 #include "SolverService.hpp"
-#include <cstddef>
-#include <memory>
+// #include <cstddef>
+// #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 #include <stack>
 
 // ... (Board, BoardSave, SearchNode class declarations as before)
-using Tiles = Models::Tiles<N>;
 
-struct BoardHash {
-  static constexpr std::hash<std::size_t> tileHasher{};
-  std::size_t operator()(const Tiles& k) const {
-    return tileHasher(k.toLong()); // Use std::hash for int
-  }
-};
+
 
 // std::hash is stateless, so no thread-related problems if you use it on more than one thread
 
 using BoardMap = std::unordered_set<Tiles, BoardHash>;
 
-std::list<Board> Solver::solution() {
+// we'll not be using a searchnode and it's parents we'll be using a hashset
+
+void clear(BoardMap& finished, std::stack<Board>& queue, std::stack<Board>& nextBox, 
+std::stack<Board>& queueBackwards, std::stack<Board>& queueBackwardsNextBox){
+  std::stack<Board>{}.swap(queue);
+  std::stack<Board>{}.swap(nextBox);
+  BoardMap{}.swap(finished);
+  std::stack<Board>{}.swap(queueBackwards);
+  std::stack<Board>{}.swap(queueBackwardsNextBox);
+}
+
+std::list<Tiles> Solver::solution() {
 
   BoardMap finished{};
-  std::stack<std::shared_ptr<SearchNode>> queue{};
+  std::unordered_map<Tiles, Tiles, BoardHash> path_reconstruct {};
+  std::stack<Board> queue{};
   // int id = 0;
-  queue.push(std::make_shared<SearchNode>(nullptr, initial));
+  queue.push(initial);
+  Tiles cutoff = Tiles{ std::array<unsigned char, N*N>{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0} };
+  path_reconstruct[initial.getTiles()] = cutoff;
 
-  std::shared_ptr<SearchNode> finalNode = nullptr;
+  // std::shared_ptr<SearchNode> finalNode = nullptr;
 
   while (!queue.empty()) {
-    std::stack<std::shared_ptr<SearchNode>> nextBox;
+    std::stack<Board> nextBox;
     while (!queue.empty()) {
-      std::shared_ptr<SearchNode> currentNode = queue.top();
+      auto currentNode = queue.top();
       queue.pop();
       // std::cout<< moves++<<"\n";
 
-      finished.insert(currentNode->board.getTiles());
+      finished.insert(currentNode.getTiles());
 
-      if (currentNode->board.isGoal()) {
-        finalNode = currentNode;
+      if (currentNode.isGoal()) {
+        auto finalBoard = currentNode.getTiles();
         // moves = currentNode->moves;
         std::cout<< "Queue size: "<< queue.size()<< ", Set size: " << finished.size()<< "\n";
         std::cout<< "Next box: " << nextBox.size() << "\n";
-        std::stack<std::shared_ptr<SearchNode>>{}.swap(queue);
-        std::stack<std::shared_ptr<SearchNode>>{}.swap(nextBox);
+        std::stack<Board>{}.swap(queue);
+        std::stack<Board>{}.swap(nextBox);
         BoardMap{}.swap(finished);
-        return makeHistory(finalNode);
+        return makeHistory(finalBoard,path_reconstruct,cutoff);
       } else {
         // std::cout<< "Entered within the else \n";
-        for (auto neighbor : currentNode->board.neighbors()) {
+        for (auto neighbor : currentNode.neighbors()) {
           // std::cout<< "Entered within the neighbor \n";
           Board board = neighbor.board;
           bool isNextBox = neighbor.isNextBox;
           if (finished.count(board.getTiles())) {
             continue;
           }
-          auto nextSearchNode = std::make_shared<SearchNode>(currentNode, board);
+          path_reconstruct[board.getTiles()] = currentNode.getTiles();
           if (isNextBox)
-            nextBox.push(nextSearchNode);
+            nextBox.push(board);
           else
-            queue.push(nextSearchNode);
+            queue.push(board);
         }
       }
     }
@@ -66,14 +75,15 @@ std::list<Board> Solver::solution() {
       queue = std::move(nextBox); // Move the contents of nextBox to queue
     }
   }
-  return std::list<Board>();
+  return std::list<Tiles>{};
 }
 
-std::list<Board> Solver::makeHistory(std::shared_ptr<SearchNode> node) {
-  std::list<Board> boards;
-  while(node != nullptr){
-    boards.push_front(node->board);
-    node = node->parent;
+std::list<Tiles> Solver::makeHistory(Tiles& node, std::unordered_map<Tiles, Tiles, BoardHash>& path_reconstruct, Tiles& nullVal) {
+  std::list<Tiles> boards;
+  Tiles currentBoard = node;
+  while(currentBoard != nullVal){
+    boards.push_front(currentBoard);
+    currentBoard = path_reconstruct.at(currentBoard);
   }
   moves = boards.size()-1;
   std::cout<< "Final list size: "<<boards.size()<<"\n";
