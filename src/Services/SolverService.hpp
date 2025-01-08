@@ -11,6 +11,8 @@ constexpr int N = 4;
 
 using Board = Models::Board<N>;
 using SearchNode = Models::SearchNode<N>;
+using Tiles = Models::Tiles<N>;
+
 
 class Solver {
 private:
@@ -21,8 +23,8 @@ public:
     return moves;
   }
   Solver(const Board& initial) : initial(initial) {}
-  std::list<Board> solution();
-private:
-  std::list<Board> makeHistory(std::shared_ptr<SearchNode> node);
+  std::list<Tiles> solution();
+// private:
+//   std::list<Board> makeHistory(std::shared_ptr<SearchNode>& node);
 };
 #endif
