@@ -7,7 +7,7 @@ template <int N>
 struct SearchNode{
     // int previous_board_id;
     // SearchNode<N>* previousNode; // this is so i can test it rn. Will be made to id later
-    std::shared_ptr<SearchNode<N>> parent;
+    Tiles<N> parent;
     // int id; // -> e merr nga ajo qe ia fut
     Board<N> board;
     // int moves;
@@ -24,7 +24,7 @@ struct SearchNode{
     //   moves{moves}
     // {}
 
-     SearchNode(std::shared_ptr<SearchNode<N>> previous, Board<N> current) : 
+     SearchNode(Tiles<N> previous, Board<N> current) : 
       parent{previous},
       // id{id},
       board{current}
